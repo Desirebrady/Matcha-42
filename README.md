@@ -4,3 +4,9 @@ First time using Nodejs. This is a tinder-like dating website made with some res
 
 I used MySql for database, Bootstrap for css
 ![Screenshot](index.png)
+
+we had to implement a tinder like app 
+
+![Screenshot](register.png)
+
+![Screenshot](login.png)
