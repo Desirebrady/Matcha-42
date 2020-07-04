@@ -1,4 +1,4 @@
-# matcha-42 school projet - Web
+# Matcha-42 School projet - Web
 
 I used MySql for database, Bootstrap for css
 ![Screenshot](index.png)
