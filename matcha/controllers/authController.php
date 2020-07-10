@@ -4,6 +4,7 @@ $auth = 0;
 session_start();
 $username = "";
 $email = "";
+include 'sendEmails.php';
 
 $conn = new mysqli('localhost', 'root', '', 'matcha');
 
@@ -22,7 +23,7 @@ if (isset($_POST['signup-btn'])) {
         $error .= '<p class="text-danger">Passwords dont Match </p>';
     }
     $commentl = strlen($_POST['password']);
-    if ($commentl < 8){
+    if ($commentl < 8) {
         $error .= '<p class="text-danger">Password should contain more than 8 characters</p>';
     }
     $username = $_POST['username'];
@@ -36,42 +37,31 @@ if (isset($_POST['signup-btn'])) {
     if (mysqli_num_rows($result) > 0) {
         $error .= '<p class="text-danger">Email exist</p>';;
     }
-        
-    if($error == '')
-        {
-            $query = "INSERT INTO users SET username=?, email=?, token=?, password=?";
-            $stmt = $conn->prepare($query);
-            $stmt->bind_param('ssss', $username, $email, $token, $password);
-            $result = $stmt->execute();
 
-            if ($result) {
-                $user_id = $stmt->insert_id;
-                $stmt->close();
+    if ($error == '') {
+        $query = "INSERT INTO users SET username=?, email=?, token=?, password=?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param('ssss', $username, $email, $token, $password);
+        $result = $stmt->execute();
 
-                // TO DO: send verification email to user
-                $body = '
-                        Thank you for signing up on our site. Please click on the link below to verify your account:.
-                        "http://127.0.0.1:8080/matcha/admin/verification_mail.php?token=' . $token . '"';
-                $headers = "From: info@matcha.com";
-                // Send the message
-                mail($email,"Verify your email",$body,$headers);
-
-                $_SESSION['id'] = $user_id;
-                $_SESSION['username'] = $username;
-                $_SESSION['email'] = $email;
-                $_SESSION['verified'] = false;
-                $_SESSION['message'] = 'You are logged in!';
-                $_SESSION['type'] = 'alert-success';
-                header('location: ../admin/verify.php');
-            } else {
-                $_SESSION['error_msg'] = "Database error: Could not register user";
-            }
+        if ($result) {
+            $user_id = $stmt->insert_id;
+            $stmt->close();
+            sendVerificationEmail($email, $token);
+            $_SESSION['id'] = $user_id;
+            $_SESSION['username'] = $username;
+            $_SESSION['email'] = $email;
+            $_SESSION['verified'] = false;
+            header('location: ../admin/verify.php');
+        } else {
+            $_SESSION['error_msg'] = "Database error: Could not register user";
         }
-        $data = array(
-            'error'  => $error
-        );
-        
-        echo json_encode($data);
+    }
+    $data = array(
+        'error'  => $error
+    );
+
+    echo json_encode($data);
 }
 
 // LOGIN
@@ -85,15 +75,18 @@ if (isset($_POST['login-btn'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    if (count($errors) === 0) {
+    if (empty($errors)) {
         $query = "SELECT * FROM users WHERE username=? OR email=? LIMIT 1";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('ss', $username, $password);
-
+        echo "fuck this shit";
         if ($stmt->execute()) {
+
             $result = $stmt->get_result();
+
             $user = $result->fetch_assoc();
-            if (password_verify($password, $user['password'])) { // if password matches
+            print_r($user);
+            if ($user) { // if password matches
                 $stmt->close();
                 $_SESSION['id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
@@ -112,5 +105,4 @@ if (isset($_POST['login-btn'])) {
             $_SESSION['type'] = "alert-danger";
         }
     }
-    
 }
