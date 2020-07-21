@@ -1,5 +1,5 @@
 # Matcha-42 School projet - Web
-This is a dating website like tinder where users macth and chat by their interests and location
+This is a dating website like tinder where users match and chat by their interests and location
 
 Tools Needed
 Install vs code for editing code 
